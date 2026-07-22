@@ -1,8 +1,20 @@
 import ChatMessages from './ChatMessages.jsx'
 import ChatInput from './ChatInput.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
+import DocumentStatus from './DocumentStatus.jsx'
 
-export default function ChatPage({ messages, onSend, theme, onToggleTheme, onOpenSidebar }) {
+export default function ChatPage({
+  messages,
+  onSend,
+  isTyping,
+  theme,
+  onToggleTheme,
+  onOpenSidebar,
+  documentStatus,
+  isUploading,
+  uploadError,
+  onUploadFile,
+}) {
   return (
     <div className="flex h-full min-w-0 flex-1 flex-col">
       {/* Top bar */}
@@ -22,8 +34,10 @@ export default function ChatPage({ messages, onSend, theme, onToggleTheme, onOpe
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
       </header>
 
-      <ChatMessages messages={messages} />
-      <ChatInput onSend={onSend} />
+      <DocumentStatus documentStatus={documentStatus} isUploading={isUploading} uploadError={uploadError} />
+
+      <ChatMessages messages={messages} isTyping={isTyping} />
+      <ChatInput onSend={onSend} onUploadFile={onUploadFile} isUploading={isUploading} isSending={isTyping} />
     </div>
   )
 }

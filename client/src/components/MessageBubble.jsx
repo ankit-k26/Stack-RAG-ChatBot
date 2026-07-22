@@ -23,6 +23,16 @@ function Avatar({ role }) {
 export default function MessageBubble({ role, content }) {
   const isUser = role === 'user'
 
+  if (role === 'system') {
+    return (
+      <div className="flex justify-center">
+        <div className="max-w-[85%] rounded-full bg-ink/[0.05] px-4 py-1.5 text-center text-xs text-ink/55 dark:bg-paper/[0.08] dark:text-paper/55">
+          {content}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`flex w-full animate-fadeInUp items-start gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
       <Avatar role={role} />
