@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-paper text-ink dark:bg-ink dark:text-paper transition-colors duration-200;
+}
+
+/* Slim, quiet scrollbars — the interface should stay out of the way */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.gold.soft') transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgb(58 56 63 / 30%);
+  border-radius: 999px;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgb(246 243 236 / 20%);
+}
+
+/* Visible keyboard focus, everywhere */
+:focus-visible {
+  outline: 2px solid theme('colors.gold.DEFAULT');
+  outline-offset: 2px;
+}
+
+/* Signature motif: a folded index-card corner, used sparingly on
+   AI responses and history cards to nod at "retrieval from the stacks". */
+.dogear {
+  position: relative;
+}
+
+.dogear::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, transparent 50%, theme('colors.gold.soft') 50%);
+  border-bottom-left-radius: 3px;
+  opacity: 0.75;
+}
+
+.dark .dogear::after {
+  background: linear-gradient(135deg, transparent 50%, theme('colors.gold.dim') 50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
