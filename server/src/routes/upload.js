@@ -7,6 +7,7 @@ import { chunkText } from '../lib/chunker.js'
 import { embed } from '../lib/ollamaClient.js'
 import { collectionNameFor, recreateCollection, upsertChunks } from '../lib/qdrantClient.js'
 import { setDocument } from '../lib/sessionStore.js'
+import { recordUpload } from '../lib/conversationStore.js'
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -69,6 +70,11 @@ uploadRouter.post('/', upload.single('file'), async (req, res) => {
       fileName: file.originalname,
       chunkCount: chunks.length,
       vectorSize,
+    })
+
+    await recordUpload(sessionId, req.session?.userId, {
+      fileName: session.fileName,
+      chunkCount: session.chunkCount,
     })
 
     res.json({

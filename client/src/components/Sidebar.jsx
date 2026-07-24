@@ -1,18 +1,23 @@
 import NewChatButton from './NewChatButton.jsx'
 import ChatHistoryItem from './ChatHistoryItem.jsx'
 import LoginButton from './LoginButton.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 
-const DUMMY_HISTORY = [
-  { id: 'h1', title: 'Q3 revenue breakdown from the 10-K' },
-  { id: 'h2', title: 'Summarize onboarding policy PDF' },
-  { id: 'h3', title: 'Compare vendor contracts (draft v2)' },
-  { id: 'h4', title: 'Key clauses in the lease agreement' },
-  { id: 'h5', title: 'Research notes — competitor teardown' },
-  { id: 'h6', title: 'Employee handbook, section 4 questions' },
-  { id: 'h7', title: 'Meeting transcript — action items' },
-]
+export default function Sidebar({
+  activeChatId,
+  onSelectChat,
+  onNewChat,
+  isOpen,
+  onClose,
+  onOpenLogin,
+  history,
+  historyLoading,
+  onRenameChat,
+  onDeleteChat,
+  onLogout,
+}) {
+  const { user } = useAuth()
 
-export default function Sidebar({ activeChatId, onSelectChat, onNewChat, isOpen, onClose }) {
   return (
     <>
       {/* Mobile scrim */}
@@ -64,20 +69,34 @@ export default function Sidebar({ activeChatId, onSelectChat, onNewChat, isOpen,
             Recent
           </p>
           <div className="flex-1 space-y-1 overflow-y-auto pr-1">
-            {DUMMY_HISTORY.map((chat) => (
-              <ChatHistoryItem
-                key={chat.id}
-                title={chat.title}
-                active={chat.id === activeChatId}
-                onClick={() => onSelectChat(chat.id)}
-              />
-            ))}
+            {!user ? (
+              <p className="px-3 py-2 text-sm text-ink/45 dark:text-paper/45">
+                Log in to save and revisit your chats.
+              </p>
+            ) : historyLoading ? (
+              <p className="px-3 py-2 text-sm text-ink/45 dark:text-paper/45">Loading…</p>
+            ) : history.length === 0 ? (
+              <p className="px-3 py-2 text-sm text-ink/45 dark:text-paper/45">
+                No saved chats yet — ask something to get started.
+              </p>
+            ) : (
+              history.map((chat) => (
+                <ChatHistoryItem
+                  key={chat.sessionId}
+                  title={chat.title || 'Untitled chat'}
+                  active={chat.sessionId === activeChatId}
+                  onClick={() => onSelectChat(chat.sessionId)}
+                  onRename={(newTitle) => onRenameChat(chat.sessionId, newTitle)}
+                  onDelete={() => onDeleteChat(chat.sessionId)}
+                />
+              ))
+            )}
           </div>
         </div>
 
         {/* Fixed footer */}
         <div className="mt-3 shrink-0 border-t border-ink/10 pt-3 dark:border-paper/10">
-          <LoginButton />
+          <LoginButton onOpenLogin={onOpenLogin} onLogout={onLogout} />
         </div>
       </aside>
     </>

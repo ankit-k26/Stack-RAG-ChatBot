@@ -1,22 +1,44 @@
 import express from 'express'
 import cors from 'cors'
+import session from 'express-session'
+import MongoStore from 'connect-mongo'
 import { config } from './config.js'
+import { connectDB } from './lib/db.js'
 import { sessionRouter } from './routes/session.js'
 import { uploadRouter } from './routes/upload.js'
 import { chatRouter } from './routes/chat.js'
+import { authRouter } from './routes/auth.js'
+
+await connectDB()
 
 const app = express()
 
 app.use(cors({
   origin: 'http://localhost:3000',
-  credentials: true // only needed if you're sending cookies/auth headers
+  credentials: true // needed so the login session cookie is sent/received
 }));
 app.use(express.json())
+
+// Login sessions (stored in MongoDB) — separate from the in-memory chat
+// sessionStore used for per-conversation document/history state.
+app.use(session({
+  secret: config.session.secret,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: config.mongo.uri }),
+  cookie: {
+    httpOnly: true,
+    maxAge: config.session.maxAgeMs,
+    sameSite: 'lax',
+    secure: false, // set true in production (requires HTTPS)
+  },
+}))
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true })
 })
 
+app.use('/api/auth', authRouter)
 app.use('/api/session', sessionRouter)
 app.use('/api/upload', uploadRouter)
 app.use('/api/chat', chatRouter)

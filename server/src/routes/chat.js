@@ -3,6 +3,7 @@ import { config } from '../config.js'
 import { embed, chat as chatModel } from '../lib/ollamaClient.js'
 import { collectionNameFor, search } from '../lib/qdrantClient.js'
 import { getOrCreateSession, appendHistory } from '../lib/sessionStore.js'
+import { recordExchange } from '../lib/conversationStore.js'
 import { buildChatMessages } from '../lib/promptBuilder.js'
 
 export const chatRouter = Router()
@@ -47,6 +48,8 @@ chatRouter.post('/', async (req, res) => {
 
     appendHistory(sessionId, 'user', message)
     appendHistory(sessionId, 'assistant', reply)
+
+    await recordExchange(sessionId, req.session?.userId, message, reply)
 
     res.json({
       reply,

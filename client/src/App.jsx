@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react'
 import Sidebar from './components/Sidebar.jsx'
 import ChatPage from './components/ChatPage.jsx'
-import { createSession, uploadDocument, sendMessage } from './lib/api.js'
+import LoginModal from './components/LoginModal.jsx'
+import { useAuth } from './context/AuthContext.jsx'
+import {
+  createSession,
+  uploadDocument,
+  sendMessage,
+  fetchConversationHistory,
+  fetchConversation,
+  renameConversation,
+  deleteConversation,
+} from './lib/api.js'
 
 let idCounter = 0
 const nextId = () => `m${++idCounter}`
@@ -9,7 +19,13 @@ const nextId = () => `m${++idCounter}`
 const EMPTY_DOCUMENT_STATUS = { hasDocument: false, fileName: null, chunkCount: 0 }
 
 export default function App() {
-  const [theme, setTheme] = useState('light')
+  const { user, logout } = useAuth()
+  const [theme, setTheme] = useState(() => {
+    const stored = localStorage.getItem('stacks-theme')
+    if (stored === 'light' || stored === 'dark') return stored
+    // Fall back to the OS/browser preference if nothing was saved yet
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  })
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeChatId, setActiveChatId] = useState(null)
   const [messages, setMessages] = useState([])
@@ -19,9 +35,36 @@ export default function App() {
   const [documentStatus, setDocumentStatus] = useState(EMPTY_DOCUMENT_STATUS)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState(null)
+  const [isLoginOpen, setIsLoginOpen] = useState(false)
+  const [history, setHistory] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+
+  const refreshHistory = async () => {
+    if (!user) {
+      setHistory([])
+      return
+    }
+    setHistoryLoading(true)
+    try {
+      const { conversations } = await fetchConversationHistory()
+      setHistory(conversations)
+    } catch {
+      // Sidebar just shows an empty list if this fails — not worth
+      // surfacing a hard error for a background refresh.
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
+
+  // Reload the saved-chats list whenever login state changes (login,
+  // logout, or the initial /me check resolving).
+  useEffect(() => {
+    refreshHistory()
+  }, [user])
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
+    localStorage.setItem('stacks-theme', theme)
   }, [theme])
 
   // Every conversation needs a session on the backend to track its
@@ -58,6 +101,10 @@ export default function App() {
     try {
       const { reply } = await sendMessage(sessionId, text)
       setMessages((prev) => [...prev, { id: nextId(), role: 'assistant', content: reply }])
+      if (user) {
+        setActiveChatId(sessionId)
+        refreshHistory()
+      }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -109,11 +156,83 @@ export default function App() {
     }
   }
 
-  const handleSelectChat = (chatId) => {
-    // Chat history is a placeholder for now — selecting an entry just
-    // switches the highlighted item without loading saved messages yet.
-    setActiveChatId(chatId)
+  const handleSelectChat = async (chatSessionId) => {
+    setActiveChatId(chatSessionId)
     setSidebarOpen(false)
+    setUploadError(null)
+
+    try {
+      const { conversation } = await fetchConversation(chatSessionId)
+      setSessionId(conversation.sessionId)
+      setMessages(
+        conversation.messages.map((m) => ({
+          id: nextId(),
+          role: m.role,
+          content: m.content,
+        }))
+      )
+      setDocumentStatus({
+        hasDocument: Boolean(conversation.fileName),
+        fileName: conversation.fileName,
+        chunkCount: conversation.chunkCount,
+      })
+    } catch (err) {
+      setMessages([
+        {
+          id: nextId(),
+          role: 'system',
+          content: err.message || "Couldn't load that conversation.",
+        },
+      ])
+    }
+  }
+
+  const handleRenameChat = async (chatSessionId, newTitle) => {
+    // Update the sidebar immediately; roll back if the request fails.
+    const previous = history
+    setHistory((prev) =>
+      prev.map((c) => (c.sessionId === chatSessionId ? { ...c, title: newTitle } : c))
+    )
+    try {
+      await renameConversation(chatSessionId, newTitle)
+    } catch {
+      setHistory(previous)
+    }
+  }
+
+  const handleDeleteChat = async (chatSessionId) => {
+    const previous = history
+    setHistory((prev) => prev.filter((c) => c.sessionId !== chatSessionId))
+
+    try {
+      await deleteConversation(chatSessionId)
+      if (chatSessionId === activeChatId) {
+        handleNewChat()
+      }
+    } catch {
+      setHistory(previous)
+    }
+  }
+
+  const handleLogout = async () => {
+    console.log('[Stacks] logging out — resetting chat view')
+    try {
+      await logout()
+    } finally {
+      // Reset regardless of whether the API call succeeded — the person
+      // clicked "log out," so the screen should reflect that either way.
+      setMessages([])
+      setActiveChatId(null)
+      setDocumentStatus(EMPTY_DOCUMENT_STATUS)
+      setUploadError(null)
+      setSidebarOpen(false)
+      try {
+        const { sessionId: newSessionId } = await createSession()
+        setSessionId(newSessionId)
+      } catch {
+        // Keep the old session rather than leave the user stuck with none.
+      }
+    }
   }
 
   return (
@@ -124,7 +243,14 @@ export default function App() {
         onNewChat={handleNewChat}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        onOpenLogin={() => setIsLoginOpen(true)}
+        history={history}
+        historyLoading={historyLoading}
+        onRenameChat={handleRenameChat}
+        onDeleteChat={handleDeleteChat}
+        onLogout={handleLogout}
       />
+      {isLoginOpen && <LoginModal onClose={() => setIsLoginOpen(false)} />}
       <ChatPage
         messages={messages}
         onSend={handleSend}

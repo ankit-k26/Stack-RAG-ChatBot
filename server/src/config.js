@@ -36,4 +36,13 @@ export const config = {
   upload: {
     maxUploadMb: int(process.env.MAX_UPLOAD_MB, 20),
   },
+
+  mongo: {
+    uri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/stacks_rag',
+  },
+
+  session: {
+    secret: process.env.SESSION_SECRET || 'dev-secret-change-me',
+    maxAgeMs: 1000 * 60 * 60 * 24 * 7, // 7 days
+  },
 }
