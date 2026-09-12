@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { config } from '../config.js'
 import { isSupportedFile, supportedExtensionsLabel, extractText } from '../lib/textExtract.js'
 import { chunkText } from '../lib/chunker.js'
-import { embed } from '../lib/ollamaClient.js'
+import { embed } from '../lib/geminiClient.js'
 import { collectionNameFor, recreateCollection, upsertChunks } from '../lib/qdrantClient.js'
 import { setDocument } from '../lib/sessionStore.js'
 import { recordUpload } from '../lib/conversationStore.js'
@@ -46,7 +46,8 @@ uploadRouter.post('/', upload.single('file'), async (req, res) => {
       return res.status(422).json({ error: "Couldn't find any readable text in that file." })
     }
 
-    const vectors = await embed(chunks)
+    // Embed all chunks as RETRIEVAL_DOCUMENT for optimal storage-side vectors.
+    const vectors = await embed(chunks, 'RETRIEVAL_DOCUMENT')
     const vectorSize = vectors[0]?.length
     if (!vectorSize) {
       throw new Error('Embedding model returned no vector')
@@ -84,8 +85,7 @@ uploadRouter.post('/', upload.single('file'), async (req, res) => {
   } catch (err) {
     console.error('Upload failed:', err)
     res.status(502).json({
-      error:
-        'Could not index that file right now. Make sure Ollama and Qdrant are running and reachable, then try again.',
+      error: 'Could not index that file right now. Check your GEMINI_API_KEY and QDRANT_URL, then try again.',
     })
   }
 })

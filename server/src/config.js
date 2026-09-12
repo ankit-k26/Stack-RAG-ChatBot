@@ -14,14 +14,17 @@ export const config = {
   port: int(process.env.PORT, 3001),
   clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
 
-  ollama: {
-    host: process.env.OLLAMA_HOST || 'http://127.0.0.1:11434',
-    chatModel: process.env.OLLAMA_CHAT_MODEL || 'gemma4:31b-cloud',
-    embedModel: process.env.OLLAMA_EMBED_MODEL || 'qwen3-embedding:0.6b',
+  // ── Gemini API (replaces local Ollama) ──────────────────────────────────
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY || '',
+    // gemini-2.0-flash: fast, generous free quota, great for RAG
+    chatModel: process.env.GEMINI_CHAT_MODEL || 'gemini-2.0-flash',
+    // text-embedding-004: 768-dim vectors, ideal for retrieval tasks
+    embedModel: process.env.GEMINI_EMBED_MODEL || 'text-embedding-004',
   },
 
   qdrant: {
-    url: process.env.QDRANT_URL || 'http://127.0.0.1:8333',
+    url: process.env.QDRANT_URL || 'http://127.0.0.1:6333',
     apiKey: process.env.QDRANT_API_KEY || undefined,
     collectionPrefix: process.env.QDRANT_COLLECTION_PREFIX || 'stacks_session_',
   },

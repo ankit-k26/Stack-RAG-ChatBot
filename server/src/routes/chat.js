@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { config } from '../config.js'
-import { embed, chat as chatModel } from '../lib/ollamaClient.js'
+import { embed, chat as chatModel } from '../lib/geminiClient.js'
 import { collectionNameFor, search } from '../lib/qdrantClient.js'
 import { getOrCreateSession, appendHistory } from '../lib/sessionStore.js'
 import { recordExchange } from '../lib/conversationStore.js'
@@ -24,7 +24,8 @@ chatRouter.post('/', async (req, res) => {
     let matches = []
 
     if (session.hasDocument) {
-      const [queryVector] = await embed(message)
+      // Embed the user's query with RETRIEVAL_QUERY for optimal cosine distance.
+      const [queryVector] = await embed(message, 'RETRIEVAL_QUERY')
       matches = await search(collectionNameFor(sessionId), queryVector, {
         limit: config.retrieval.topK,
         // Ask Qdrant to only bother returning candidates anywhere close;
@@ -64,8 +65,7 @@ chatRouter.post('/', async (req, res) => {
   } catch (err) {
     console.error('Chat request failed:', err)
     res.status(502).json({
-      error:
-        'Could not reach the language model right now. Make sure Ollama is running and try again.',
+      error: 'Could not reach the language model right now. Check your GEMINI_API_KEY and try again.',
     })
   }
 })

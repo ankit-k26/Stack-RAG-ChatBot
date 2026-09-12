@@ -143,3 +143,17 @@ docker-compose.local.yml
 .turbo/
 design
 .agents
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Explicit Secrets, Keys, and Certs
+# ─────────────────────────────────────────────────────────────────────────────
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+secrets.json
+auth.json
+*.keystore
+*.pub

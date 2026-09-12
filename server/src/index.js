@@ -14,7 +14,7 @@ await connectDB()
 const app = express()
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: config.clientOrigin,
   credentials: true // needed so the login session cookie is sent/received
 }));
 app.use(express.json())
@@ -57,6 +57,6 @@ app.use((err, req, res, next) => {
 
 app.listen(config.port, () => {
   console.log(`Stacks server listening on http://localhost:${config.port}`)
-  console.log(`  Ollama:  ${config.ollama.host} (chat: ${config.ollama.chatModel}, embed: ${config.ollama.embedModel})`)
+  console.log(`  Gemini:  ${config.gemini.chatModel} / ${config.gemini.embedModel}`)
   console.log(`  Qdrant:  ${config.qdrant.url}`)
 })
