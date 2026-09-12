@@ -5,47 +5,56 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"Fraunces"', 'ui-serif', 'Georgia', 'serif'],
-        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // Primary UI font — clean, modern, non-default
+        sans: ['"Outfit"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // AI reply / terminal style — Deep Violet Terminal influence
+        mono: ['"JetBrains Mono"', '"Fira Code"', 'Menlo', 'monospace'],
       },
       colors: {
-        // "Stacks" palette — an archive/library-inspired identity for a
-        // document-retrieval chatbot. Warm paper + deep ink, gold as the
-        // single retrieval accent (never the default terracotta/cream combo).
-        paper: {
-          DEFAULT: '#F6F3EC',
-          soft: '#EFEBE1',
+        // ── Obsidian Glass dark surfaces ──────────────────────────
+        obsidian: {
+          DEFAULT: '#0F0F12',   // sidebar dark bg
+          raised: '#141418',   // main chat area dark bg
+          overlay: '#1A1A22',  // cards, input container dark
+          bubble: '#1C1C2E',   // AI bubble bg (violet-tinted dark)
         },
-        ink: {
-          DEFAULT: '#1B1A1E',
-          soft: '#242329',
-          muted: '#3A383F',
+        // ── Teal accent (single accent, used everywhere) ──────────
+        accent: {
+          DEFAULT: '#00C9B1',
+          dim: '#009E8D',
         },
-        gold: {
-          DEFAULT: '#B98A2E',
-          soft: '#D9B36C',
-          dim: '#8A6A24',
-        },
-        sage: {
-          DEFAULT: '#4F7969',
-          soft: '#7FA396',
+        // ── Light mode surfaces ───────────────────────────────────
+        cloud: {
+          DEFAULT: '#FFFFFF',
+          raised: '#F4F4F7',
+          overlay: '#EAEAF0',
         },
       },
       boxShadow: {
-        card: '0 1px 2px rgba(27, 26, 30, 0.06), 0 4px 12px rgba(27, 26, 30, 0.05)',
-        lift: '0 8px 24px rgba(27, 26, 30, 0.12)',
-      },
-      borderRadius: {
-        xl2: '1.25rem',
+        // Teal glow — for interactive elements
+        'teal-glow': '0 0 0 1px rgba(0,201,177,0.25), 0 0 16px rgba(0,201,177,0.1)',
+        // Teal focus ring — for input containers
+        'teal-focus': '0 0 0 2px rgba(0,201,177,0.35), 0 0 24px rgba(0,201,177,0.12)',
+        // Violet bubble shadow
+        'violet-card': '0 4px 24px rgba(109,40,217,0.2)',
+        card: '0 1px 3px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.12)',
+        lift: '0 8px 40px rgba(0,0,0,0.45)',
       },
       keyframes: {
+        // Message entrance
         fadeInUp: {
-          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        // Typing indicator dots (violet)
+        dotBounce: {
+          '0%, 60%, 100%': { transform: 'translateY(0)', opacity: '0.5' },
+          '30%': { transform: 'translateY(-5px)', opacity: '1' },
         },
       },
       animation: {
-        fadeInUp: 'fadeInUp 0.25s ease-out',
+        fadeInUp: 'fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both',
+        dotBounce: 'dotBounce 1.2s ease-in-out infinite',
       },
     },
   },

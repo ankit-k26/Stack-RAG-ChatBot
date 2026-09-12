@@ -1,43 +1,55 @@
 import { useEffect, useRef } from 'react'
 import MessageBubble from './MessageBubble.jsx'
 
+/** Glowing teal orb — Obsidian Glass welcome hero */
 function WelcomeState() {
   return (
     <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-ink text-paper dark:bg-gold-soft dark:text-ink">
-        <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7">
-          <path
-            d="M4 5.5C4 4.67 4.67 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z"
-            fill="currentColor"
-            opacity="0.9"
-          />
-          <path d="M13 4h5.5c.83 0 1.5.67 1.5 1.5v13c0 .83-.67 1.5-1.5 1.5H13V4Z" fill="currentColor" opacity="0.55" />
-        </svg>
+      {/* Teal orb with CSS pulse animation defined in index.css */}
+      <div className="relative mb-7">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent/15 animate-orb-pulse">
+          <div className="h-8 w-8 rounded-full bg-accent/75" />
+        </div>
       </div>
-      <h1 className="font-display text-3xl font-medium tracking-tight text-ink dark:text-paper">
+
+      <h1 className="text-[28px] font-semibold tracking-tight text-obsidian dark:text-white">
         How can I help you today?
       </h1>
-      <p className="mt-3 max-w-md text-sm text-ink/55 dark:text-paper/55">
-        Attach a document with the clip icon, then ask anything about it. Nothing uploaded yet?
-        You can still say hello — I'll just let you know when a question needs a file.
+      <p className="mt-3 max-w-[380px] text-[15px] leading-relaxed text-obsidian/50 dark:text-white/45">
+        Attach a document and ask anything about it — or just start a conversation.
       </p>
     </div>
   )
 }
 
+/**
+ * Typing indicator — violet dots on a Deep Violet Terminal-style dark card.
+ * This bridges the two aesthetics: Obsidian Glass frame, violet terminal feel.
+ */
 function TypingIndicator() {
   return (
     <div className="flex items-start gap-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-paper dark:bg-gold-soft dark:text-ink">
-        <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-          <path d="M4 5.5C4 4.67 4.67 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z" fill="currentColor" opacity="0.9" />
-          <path d="M13 4h5.5c.83 0 1.5.67 1.5 1.5v13c0 .83-.67 1.5-1.5 1.5H13V4Z" fill="currentColor" opacity="0.55" />
+      {/* AI avatar orb */}
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-black/[0.07] bg-cloud-raised dark:border-white/[0.08] dark:bg-obsidian-bubble">
+        <svg viewBox="0 0 20 20" fill="none" className="h-[15px] w-[15px]" aria-hidden="true">
+          <path d="M10 2L11.8 8.2L18 10L11.8 11.8L10 18L8.2 11.8L2 10L8.2 8.2L10 2Z" fill="#00C9B1" />
         </svg>
       </div>
-      <div className="dogear flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-4 py-3 shadow-card dark:bg-ink-muted">
-        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink/40 [animation-delay:-0.3s] dark:bg-paper/40" />
-        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink/40 [animation-delay:-0.15s] dark:bg-paper/40" />
-        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink/40 dark:bg-paper/40" />
+
+      {/* Violet dots on dark card — Deep Violet Terminal influence */}
+      <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-sm border border-black/[0.06] bg-cloud-raised px-4 py-3 dark:border-white/[0.07] dark:bg-obsidian-bubble">
+        <span
+          className="h-2 w-2 rounded-full bg-violet-400 animate-dotBounce"
+          style={{ animationDelay: '0ms' }}
+        />
+        <span
+          className="h-2 w-2 rounded-full bg-violet-400 animate-dotBounce"
+          style={{ animationDelay: '150ms' }}
+        />
+        <span
+          className="h-2 w-2 rounded-full bg-violet-400 animate-dotBounce"
+          style={{ animationDelay: '300ms' }}
+        />
       </div>
     </div>
   )

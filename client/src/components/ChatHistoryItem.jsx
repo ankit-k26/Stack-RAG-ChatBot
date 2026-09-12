@@ -37,7 +37,7 @@ export default function ChatHistoryItem({ title, active = false, onClick, onRena
 
   if (isEditing) {
     return (
-      <div className="w-full rounded-lg px-3 py-2">
+      <div className="w-full rounded-lg px-2 py-2">
         <input
           autoFocus
           value={draft}
@@ -45,8 +45,9 @@ export default function ChatHistoryItem({ title, active = false, onClick, onRena
           onBlur={commitRename}
           onKeyDown={handleKeyDown}
           onClick={(e) => e.stopPropagation()}
-          className="w-full rounded border border-gold bg-paper px-1.5 py-0.5 text-sm text-ink
-                     focus:outline-none dark:bg-ink dark:text-paper"
+          className="w-full rounded-lg border border-accent/40 bg-cloud-overlay px-2.5 py-1.5 text-sm
+                     text-obsidian focus:outline-none
+                     dark:bg-obsidian dark:text-white"
         />
       </div>
     )
@@ -55,28 +56,34 @@ export default function ChatHistoryItem({ title, active = false, onClick, onRena
   return (
     <button
       onClick={onClick}
-      className={`dogear group relative flex w-full items-center rounded-lg px-3 py-2 text-left text-sm
-                  transition-colors duration-150
-                  ${
-                    active
-                      ? 'bg-ink/[0.06] font-medium text-ink dark:bg-paper/10 dark:text-paper'
-                      : 'text-ink/65 hover:bg-ink/[0.04] dark:text-paper/60 dark:hover:bg-paper/[0.06]'
-                  }`}
       title={title}
+      className={`group relative flex w-full items-center rounded-lg px-3 py-2 text-left text-sm
+                  transition-colors duration-150
+                  ${active
+                    ? 'bg-accent/[0.09] font-medium text-obsidian dark:bg-accent/[0.08] dark:text-white'
+                    : 'text-obsidian/55 hover:bg-black/[0.04] hover:text-obsidian dark:text-white/45 dark:hover:bg-white/[0.05] dark:hover:text-white/80'
+                  }`}
     >
-      <span className="min-w-0 flex-1 truncate pr-2">{title}</span>
+      {/* Active state — teal left bar */}
+      {active && (
+        <span className="absolute left-0 top-1/2 h-[18px] w-0.5 -translate-y-1/2 rounded-r-full bg-accent" />
+      )}
 
+      <span className="min-w-0 flex-1 truncate pl-1 pr-2">{title}</span>
+
+      {/* Hover action icons */}
       <span className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+        {/* Rename */}
         <span
           role="button"
           tabIndex={0}
           onClick={startEditing}
           onKeyDown={(e) => e.key === 'Enter' && startEditing(e)}
-          className="rounded p-1 text-ink/40 hover:bg-ink/[0.08] hover:text-ink
-                     dark:text-paper/40 dark:hover:bg-paper/[0.1] dark:hover:text-paper"
           aria-label="Rename chat"
+          className="rounded-md p-1 text-obsidian/35 hover:bg-black/[0.07] hover:text-obsidian
+                     dark:text-white/30 dark:hover:bg-white/[0.1] dark:hover:text-white"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5" aria-hidden="true">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -84,16 +91,17 @@ export default function ChatHistoryItem({ title, active = false, onClick, onRena
             />
           </svg>
         </span>
+        {/* Delete */}
         <span
           role="button"
           tabIndex={0}
           onClick={handleDelete}
           onKeyDown={(e) => e.key === 'Enter' && handleDelete(e)}
-          className="rounded p-1 text-ink/40 hover:bg-red-500/10 hover:text-red-600
-                     dark:text-paper/40 dark:hover:bg-red-500/10 dark:hover:text-red-400"
           aria-label="Delete chat"
+          className="rounded-md p-1 text-obsidian/35 hover:bg-red-500/10 hover:text-red-600
+                     dark:text-white/30 dark:hover:bg-red-500/10 dark:hover:text-red-400"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5" aria-hidden="true">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

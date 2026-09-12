@@ -9,18 +9,21 @@ body,
 }
 
 body {
-  @apply bg-paper text-ink dark:bg-ink dark:text-paper transition-colors duration-200;
+  @apply bg-cloud text-obsidian dark:bg-obsidian dark:text-white;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Slim, quiet scrollbars — the interface should stay out of the way */
+/* ── Scrollbars — slim, teal-tinted ────────────────────── */
 * {
   scrollbar-width: thin;
-  scrollbar-color: theme('colors.gold.soft') transparent;
+  scrollbar-color: rgba(0, 201, 177, 0.18) transparent;
 }
 
 *::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 *::-webkit-scrollbar-track {
@@ -28,42 +31,42 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: rgb(58 56 63 / 30%);
+  background-color: rgba(0, 201, 177, 0.18);
   border-radius: 999px;
 }
 
-.dark *::-webkit-scrollbar-thumb {
-  background-color: rgb(246 243 236 / 20%);
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 201, 177, 0.32);
 }
 
-/* Visible keyboard focus, everywhere */
+/* ── Keyboard focus ring — teal ─────────────────────────── */
 :focus-visible {
-  outline: 2px solid theme('colors.gold.DEFAULT');
+  outline: 2px solid #00c9b1;
   outline-offset: 2px;
 }
 
-/* Signature motif: a folded index-card corner, used sparingly on
-   AI responses and history cards to nod at "retrieval from the stacks". */
-.dogear {
-  position: relative;
+/* ── Teal orb pulse (welcome state hero) ────────────────── */
+@keyframes orb-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(0, 201, 177, 0),
+      0 0 20px 4px rgba(0, 201, 177, 0.22),
+      0 0 40px 10px rgba(0, 201, 177, 0.07);
+  }
+  50% {
+    box-shadow:
+      0 0 0 8px rgba(0, 201, 177, 0.04),
+      0 0 28px 8px rgba(0, 201, 177, 0.38),
+      0 0 56px 18px rgba(0, 201, 177, 0.1);
+  }
 }
 
-.dogear::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 14px;
-  height: 14px;
-  background: linear-gradient(135deg, transparent 50%, theme('colors.gold.soft') 50%);
-  border-bottom-left-radius: 3px;
-  opacity: 0.75;
+.animate-orb-pulse {
+  animation: orb-pulse 3s ease-in-out infinite;
 }
 
-.dark .dogear::after {
-  background: linear-gradient(135deg, transparent 50%, theme('colors.gold.dim') 50%);
-}
-
+/* ── Reduced motion ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

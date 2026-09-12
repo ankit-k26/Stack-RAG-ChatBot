@@ -236,7 +236,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-paper text-ink dark:bg-ink dark:text-paper">
+    <div className="flex h-screen w-screen overflow-hidden bg-cloud text-obsidian dark:bg-obsidian dark:text-white">
       <Sidebar
         activeChatId={activeChatId}
         onSelectChat={handleSelectChat}

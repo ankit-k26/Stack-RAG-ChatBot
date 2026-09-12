@@ -3,13 +3,15 @@ export default function ThemeToggle({ theme, onToggle }) {
   return (
     <button
       onClick={onToggle}
-      aria-label="Toggle dark mode"
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg
-                 text-ink/60 transition-colors duration-150 hover:bg-ink/[0.06]
-                 dark:text-paper/60 dark:hover:bg-paper/[0.08]"
+                 text-obsidian/50 transition-colors duration-150
+                 hover:bg-black/[0.06] hover:text-obsidian
+                 dark:text-white/40 dark:hover:bg-white/[0.08] dark:hover:text-white/80"
     >
       {isDark ? (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-[18px] w-[18px]">
+        /* Sun — visible in dark mode, click to go light */
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-[18px] w-[18px]" aria-hidden="true">
           <circle cx="12" cy="12" r="4" />
           <path
             strokeLinecap="round"
@@ -17,7 +19,8 @@ export default function ThemeToggle({ theme, onToggle }) {
           />
         </svg>
       ) : (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-[18px] w-[18px]">
+        /* Moon — visible in light mode, click to go dark */
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-[18px] w-[18px]" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
         </svg>
       )}

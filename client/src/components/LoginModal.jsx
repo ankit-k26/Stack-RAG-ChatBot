@@ -29,24 +29,49 @@ export default function LoginModal({ onClose }) {
     }
   }
 
+  // Shared input class for all fields
+  const inputCls = `w-full rounded-xl border border-black/[0.1] bg-cloud-overlay px-4 py-3 text-sm text-obsidian
+                    placeholder:text-obsidian/35 transition-colors duration-150
+                    focus:border-accent/45 focus:outline-none focus:ring-1 focus:ring-accent/25
+                    dark:border-white/[0.1] dark:bg-obsidian dark:text-white dark:placeholder:text-white/30
+                    dark:focus:border-accent/40`
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm animate-fadeInUp rounded-xl2 border border-ink/10 bg-paper p-6
-                   shadow-lift dark:border-paper/10 dark:bg-ink-soft"
+        className="w-full max-w-sm animate-fadeInUp rounded-2xl border border-black/[0.09] bg-cloud p-6 shadow-lift
+                   dark:border-white/[0.1] dark:bg-obsidian-overlay"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-display text-xl font-semibold tracking-tight text-ink dark:text-paper">
-          {mode === 'login' ? 'Log in' : 'Create an account'}
-        </h2>
-        <p className="mt-1 text-sm text-ink/50 dark:text-paper/50">
-          {mode === 'login' ? 'Welcome back to Stacks.' : 'Join Stacks to save your chats.'}
-        </p>
+        {/* ── Header ── */}
+        <div className="mb-5 flex items-start justify-between">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight text-obsidian dark:text-white">
+              {mode === 'login' ? 'Welcome back' : 'Create account'}
+            </h2>
+            <p className="mt-0.5 text-sm text-obsidian/50 dark:text-white/45">
+              {mode === 'login' ? 'Log in to Stacks.' : 'Join Stacks to save your chats.'}
+            </p>
+          </div>
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="ml-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg
+                       text-obsidian/40 transition-colors hover:bg-black/[0.06] hover:text-obsidian
+                       dark:text-white/35 dark:hover:bg-white/[0.08] dark:hover:text-white"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-3">
+        {/* ── Form ── */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           {mode === 'login' ? (
             <input
               type="text"
@@ -54,9 +79,7 @@ export default function LoginModal({ onClose }) {
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               required
-              className="rounded-lg border border-ink/15 bg-paper px-3 py-2.5 text-sm text-ink
-                         placeholder:text-ink/35 focus:border-gold focus:outline-none
-                         dark:border-paper/15 dark:bg-ink dark:text-paper dark:placeholder:text-paper/35"
+              className={inputCls}
             />
           ) : (
             <>
@@ -66,9 +89,7 @@ export default function LoginModal({ onClose }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="rounded-lg border border-ink/15 bg-paper px-3 py-2.5 text-sm text-ink
-                           placeholder:text-ink/35 focus:border-gold focus:outline-none
-                           dark:border-paper/15 dark:bg-ink dark:text-paper dark:placeholder:text-paper/35"
+                className={inputCls}
               />
               <input
                 type="email"
@@ -76,9 +97,7 @@ export default function LoginModal({ onClose }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="rounded-lg border border-ink/15 bg-paper px-3 py-2.5 text-sm text-ink
-                           placeholder:text-ink/35 focus:border-gold focus:outline-none
-                           dark:border-paper/15 dark:bg-ink dark:text-paper dark:placeholder:text-paper/35"
+                className={inputCls}
               />
             </>
           )}
@@ -90,25 +109,33 @@ export default function LoginModal({ onClose }) {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={8}
-            className="rounded-lg border border-ink/15 bg-paper px-3 py-2.5 text-sm text-ink
-                       placeholder:text-ink/35 focus:border-gold focus:outline-none
-                       dark:border-paper/15 dark:bg-ink dark:text-paper dark:placeholder:text-paper/35"
+            className={inputCls}
           />
 
-          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+          {error && (
+            <p className="rounded-xl bg-red-500/[0.08] px-4 py-2.5 text-sm text-red-600 dark:text-red-400">
+              {error}
+            </p>
+          )}
 
+          {/* Submit — teal accent button */}
           <button
             type="submit"
             disabled={submitting}
-            className="mt-1 rounded-lg bg-ink px-3 py-2.5 text-sm font-medium text-paper
-                       transition-colors duration-150 hover:bg-ink-soft disabled:opacity-60
-                       dark:bg-gold-soft dark:text-ink dark:hover:bg-gold"
+            className="mt-1 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-obsidian
+                       transition-all duration-150 hover:bg-accent-dim hover:shadow-teal-glow
+                       active:scale-[0.98] disabled:opacity-60"
           >
-            {submitting ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Register'}
+            {submitting
+              ? 'Please wait…'
+              : mode === 'login'
+              ? 'Log in'
+              : 'Create account'}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-ink/50 dark:text-paper/50">
+        {/* ── Mode switch ── */}
+        <p className="mt-4 text-center text-sm text-obsidian/50 dark:text-white/40">
           {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
           <button
             type="button"
@@ -116,7 +143,7 @@ export default function LoginModal({ onClose }) {
               setMode(mode === 'login' ? 'register' : 'login')
               setError('')
             }}
-            className="font-medium text-gold-dim hover:underline dark:text-gold-soft"
+            className="font-semibold text-accent hover:underline"
           >
             {mode === 'login' ? 'Register' : 'Log in'}
           </button>
