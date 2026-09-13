@@ -12,6 +12,7 @@ import { authRouter } from './routes/auth.js'
 await connectDB()
 
 const app = express()
+app.set('trust proxy', 1)
 
 app.use(cors({
   origin: config.clientOrigin,
@@ -29,8 +30,8 @@ app.use(session({
   cookie: {
     httpOnly: true,
     maxAge: config.session.maxAgeMs,
-    sameSite: 'lax',
-    secure: false, // set true in production (requires HTTPS)
+    sameSite: 'none',
+    secure: true, // set true in production (requires HTTPS)
   },
 }))
 
