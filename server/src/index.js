@@ -8,6 +8,7 @@ import { sessionRouter } from './routes/session.js'
 import { uploadRouter } from './routes/upload.js'
 import { chatRouter } from './routes/chat.js'
 import { authRouter } from './routes/auth.js'
+import { startKeepAlive } from './lib/keepAlive.js'
 
 await connectDB()
 
@@ -60,4 +61,10 @@ app.listen(config.port, () => {
   console.log(`Stacks server listening on http://localhost:${config.port}`)
   console.log(`  Gemini:  ${config.gemini.chatModel} / ${config.gemini.embedModel}`)
   console.log(`  Qdrant:  ${config.qdrant.url}`)
+
+  // On Render, RENDER_EXTERNAL_URL is injected automatically — use it as
+  // the base URL for the self-ping so the dyno never goes idle.
+  if (process.env.RENDER_EXTERNAL_URL) {
+    startKeepAlive(process.env.RENDER_EXTERNAL_URL)
+  }
 })
