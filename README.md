@@ -23,11 +23,26 @@ Upload a document. Ask it anything. Get grounded answers — or an honest "I don
 
 ---
 
+## 🖼️ Preview
+
+<div align="center">
+  <img src="docs/images/frontend.jpg" width="800" alt="Stacks Chat Interface with Glassmorphism and 3D Shader Background" />
+  <p><em>Premium glassmorphism UI with React Three Fiber shader backgrounds</em></p>
+  <br/>
+  <img src="docs/images/admin.jpg" width="800" alt="Stacks Admin Panel" />
+  <p><em>Comprehensive admin panel for user and query analytics</em></p>
+</div>
+
+---
+
 ## What it does
 
 Stacks lets you interrogate your own documents in a private chat interface. Upload a PDF, DOCX, or plain text file, ask natural-language questions, and get answers drawn directly from the document's content.
 
 - **Honest by default** — if the answer isn't in the document, Stacks says so. It never hallucinates.
+- **Premium Glassmorphism UI** — features deep space blacks, electric accents, liquid glass cards, and a custom WebGL React Three Fiber shader gradient background.
+- **Dynamic Model Selection** — switch seamlessly between Gemini models via the UI dropdown, or let it auto-select based on load.
+- **Admin Dashboard** — monitor system stats, view request logs, promote users to admin, and track both authenticated and guest usage.
 - **Guest mode** — works instantly without signing up. Sessions are ephemeral.
 - **Conversation history** — sign in to save, rename, and delete past conversations.
 - **Google Sign-In** — one-click auth alongside the classic email/password flow.
@@ -39,11 +54,11 @@ Stacks lets you interrogate your own documents in a private chat interface. Uplo
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | React 19 + Vite, vanilla CSS modules, Framer Motion |
+| **Frontend** | React + Vite, vanilla CSS modules, Framer Motion, `@react-three/fiber` |
 | **Backend** | Node.js + Express (ESM), `--watch` dev mode |
 | **AI / Embeddings** | Gemini API (`gemini-3.x-flash` + `gemini-embedding-001`) |
 | **Vector store** | Qdrant Cloud (or local via Docker) |
-| **Database** | MongoDB Atlas (or local) — users + conversation history |
+| **Database** | MongoDB Atlas (or local) — users, request logs, history |
 | **Auth** | Email/password (bcrypt + express-session) + Google OAuth 2.0 |
 
 ---
@@ -146,28 +161,6 @@ Without these values the Google button gracefully returns a `501` — the rest o
 
 ---
 
-## Model fallback
-
-Stacks uses a **fallback chain** so it stays responsive under Gemini API pressure:
-
-```
-Your GEMINI_CHAT_MODEL (primary)
-  → gemini-3.8-flash
-  → gemini-3.7-flash
-  → gemini-3.6-flash
-  → gemini-3.5-flash
-  → gemini-3.5-flash-lite
-  → gemini-3.1-flash-lite  ← last resort
-```
-
-A fallback is triggered on **429** (rate limit), **503** (overloaded), or **404** (deprecated model). You'll see a one-line warning in the server log when it kicks in:
-
-```
-[gemini] gemini-3.7-flash overloaded (503) — falling back to gemini-3.8-flash
-```
-
----
-
 ## API reference
 
 All endpoints are prefixed `/api`.
@@ -180,6 +173,7 @@ All endpoints are prefixed `/api`.
 | `POST` | `/login` | `{ identifier, password }` | Sign in (identifier = email or username) |
 | `POST` | `/logout` | — | Sign out, clear session |
 | `GET` | `/me` | — | Returns the current user or `null` |
+| `PATCH`| `/profile` | `{ displayName }` | Update user display name |
 
 ### Google OAuth — `/api/auth/google`
 
@@ -199,6 +193,15 @@ All endpoints are prefixed `/api`.
 | `PATCH` | `/history/:sessionId` | ✅ | Rename a conversation |
 | `DELETE` | `/history/:sessionId` | ✅ | Delete a conversation |
 
+### Admin — `/api/admin`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/stats` | 👑 | System metrics and request statistics |
+| `GET` | `/users` | 👑 | List all registered users |
+| `GET` | `/guests`| 👑 | List active guest sessions |
+| `POST`| `/users/:id/toggle-admin` | 👑 | Grant or revoke admin privileges |
+
 ### Upload — `/api/upload`
 
 | Method | Path | Body | Description |
@@ -209,84 +212,7 @@ All endpoints are prefixed `/api`.
 
 | Method | Path | Body | Description |
 |---|---|---|---|
-| `POST` | `/` | `{ sessionId, message }` | Send a message, returns `{ reply }` |
-
----
-
-## Project structure
-
-```
-stacks-rag-chatbot/
-├── client/                   # React + Vite frontend
-│   ├── public/               # Static assets (SVG icon, etc.)
-│   └── src/
-│       ├── components/       # UI components (CSS modules)
-│       │   ├── Sidebar.*     # Conversation history sidebar
-│       │   ├── ChatPage.*    # Main layout
-│       │   ├── ChatMessages.*# Message list + empty state
-│       │   ├── MessageBubble.*# Individual messages + code blocks
-│       │   ├── ChatInput.*   # Textarea + file upload (drag-and-drop)
-│       │   ├── Topbar.*      # Document badge + sign-in button
-│       │   ├── LoginModal.*  # Auth modal with Google Sign-In
-│       │   └── TypingIndicator.* # Animated 3-dot indicator
-│       ├── context/
-│       │   └── AuthContext.jsx   # Auth state + loginWithGoogle()
-│       ├── lib/
-│       │   └── api.js            # Fetch wrappers for all API calls
-│       ├── App.jsx               # Root — state, orchestration
-│       └── index.css             # Design tokens + global reset
-│
-├── server/                   # Express backend
-│   └── src/
-│       ├── routes/
-│       │   ├── auth.js           # Email/password auth
-│       │   ├── googleAuth.js     # Google OAuth (lazy-init)
-│       │   ├── session.js        # Session + history routes
-│       │   ├── upload.js         # File upload + Qdrant indexing
-│       │   └── chat.js           # RAG query + Gemini generation
-│       ├── lib/
-│       │   ├── geminiClient.js   # Chat + embed with fallback chain
-│       │   ├── qdrantClient.js   # Vector store operations
-│       │   ├── promptBuilder.js  # RAG prompt assembly
-│       │   ├── conversationStore.js # MongoDB conversation CRUD
-│       │   ├── sessionStore.js   # In-memory session state
-│       │   ├── chunker.js        # Text → overlapping chunks
-│       │   └── textExtract.js    # PDF / DOCX / TXT extraction
-│       ├── models/
-│       │   └── User.js           # Mongoose schema (+ Google fields)
-│       ├── middleware/
-│       │   └── auth.js           # requireAuth guard
-│       ├── config.js             # Centralised env config
-│       └── index.js              # Express app entry point
-│
-├── docker-compose.yml        # Local Qdrant setup
-└── .env.example              # (copy to server/.env)
-```
-
----
-
-## Environment variables
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `PORT` | — | `3001` | Server port |
-| `CLIENT_ORIGIN` | — | `http://localhost:5173` | CORS origin |
-| `GEMINI_API_KEY` | ✅ | — | Gemini API key |
-| `GEMINI_CHAT_MODEL` | — | `gemini-2.0-flash` | Primary chat model |
-| `GEMINI_EMBED_MODEL` | — | `text-embedding-004` | Primary embedding model |
-| `QDRANT_URL` | ✅ | `http://127.0.0.1:6333` | Qdrant endpoint |
-| `QDRANT_API_KEY` | — | — | Qdrant API key (Cloud only) |
-| `QDRANT_COLLECTION_PREFIX` | — | `stacks_session_` | Collection name prefix |
-| `CHUNK_SIZE` | — | `1200` | Characters per chunk |
-| `CHUNK_OVERLAP` | — | `150` | Overlap between chunks |
-| `TOP_K` | — | `5` | Chunks retrieved per query |
-| `SCORE_THRESHOLD` | — | `0.45` | Minimum similarity score |
-| `MAX_UPLOAD_MB` | — | `20` | Upload size limit |
-| `MONGODB_URI` | ✅ | `mongodb://localhost/stacks_rag` | MongoDB connection string |
-| `SESSION_SECRET` | ✅ | — | Express session secret |
-| `GOOGLE_CLIENT_ID` | — | — | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | — | — | Google OAuth secret |
-| `GOOGLE_CALLBACK_URL` | — | `http://localhost:3001/api/auth/google/callback` | OAuth redirect URI |
+| `POST` | `/` | `{ sessionId, message, model }` | Send a message, returns `{ reply }` |
 
 ---
 
