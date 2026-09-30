@@ -28,6 +28,20 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // ── Google OAuth fields ────────────────────────────────────────────────
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
+    displayName: {
+      type: String,
+      default: null,
+    },
+    avatarUrl: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 )

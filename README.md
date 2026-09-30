@@ -1,216 +1,215 @@
-# 📚 Stacks — a document-grounded RAG chatbot
+<div align="center">
 
-A chatbot that answers questions about a document you upload, and says
-so honestly when it can't — either because no document has been
-uploaded yet, or because the document doesn't contain the answer.
-Log in and it remembers your conversations; skip login and it works
-exactly the same, just without saving anything.
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="8" fill="#080A0E"/>
+  <rect x="6" y="18" width="20" height="4" rx="2" fill="#7C3AED" opacity="0.6"/>
+  <rect x="6" y="13" width="20" height="4" rx="2" fill="#00E5D0" opacity="0.8"/>
+  <rect x="6" y="8" width="20" height="4" rx="2" fill="#00E5D0"/>
+</svg>
 
-<p>
-  <img alt="node" src="https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white">
-  <img alt="react" src="https://img.shields.io/badge/frontend-React%20%2B%20Vite-61DAFB?logo=react&logoColor=white">
-  <img alt="express" src="https://img.shields.io/badge/backend-Express-000000?logo=express&logoColor=white">
-  <img alt="mongodb" src="https://img.shields.io/badge/auth%20%26%20history-MongoDB-47A248?logo=mongodb&logoColor=white">
-  <img alt="qdrant" src="https://img.shields.io/badge/vectors-Qdrant-DC244C">
-  <img alt="ollama" src="https://img.shields.io/badge/models-Ollama-000000?logo=ollama&logoColor=white">
-</p>
+# Stacks
 
----
+**A private, document-grounded RAG chatbot.**  
+Upload a document. Ask it anything. Get grounded answers — or an honest "I don't know."
 
-## Table of contents
+[![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square)](https://nodejs.org)
+[![React](https://img.shields.io/badge/react-19-61dafb?style=flat-square&logo=react)](https://react.dev)
+[![Gemini](https://img.shields.io/badge/Gemini%20API-2.0--3.x-4285F4?style=flat-square&logo=google)](https://ai.google.dev)
+[![Qdrant](https://img.shields.io/badge/Qdrant-cloud%20%2F%20local-dc244c?style=flat-square)](https://qdrant.tech)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas%20%2F%20local-47A248?style=flat-square&logo=mongodb)](https://mongodb.com)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
-- [How it fits together](#how-it-fits-together)
-- [Quick start](#quick-start)
-- [Environment variables](#environment-variables)
-- [Auth & saved history](#auth--saved-history)
-- [Project structure](#project-structure)
-- [API reference](#api-reference)
-- [Troubleshooting](#troubleshooting)
-- [Roadmap](#roadmap)
+</div>
 
 ---
 
-## How it fits together
+## What it does
 
-<details open>
-<summary><strong>1. Ask something, with or without an account</strong></summary>
+Stacks lets you interrogate your own documents in a private chat interface. Upload a PDF, DOCX, or plain text file, ask natural-language questions, and get answers drawn directly from the document's content.
 
-<br>
+- **Honest by default** — if the answer isn't in the document, Stacks says so. It never hallucinates.
+- **Guest mode** — works instantly without signing up. Sessions are ephemeral.
+- **Conversation history** — sign in to save, rename, and delete past conversations.
+- **Google Sign-In** — one-click auth alongside the classic email/password flow.
+- **Model fallback** — automatically downgrades to a lighter Gemini model under high demand, so the app stays responsive instead of returning errors.
 
-Every browser tab opens a **session** with the server on load. A
-session holds one uploaded document (if any) and the running
-conversation. If you're logged in, the session is also linked to your
-account and saved to MongoDB. If you're not, it lives only in server
-memory for that process's lifetime — nothing is written to disk.
+---
 
-</details>
+## Tech stack
 
-<details>
-<summary><strong>2. Upload a document</strong></summary>
-
-<br>
-
-The clip icon next to the message box sends your file to the server,
-which:
-1. Extracts its text (PDF, DOCX, or plain text)
-2. Splits it into overlapping chunks
-3. Embeds each chunk with `qwen3-embedding:0.6b` via Ollama
-4. Stores the vectors in a Qdrant collection scoped to that session
-
-</details>
-
-<details>
-<summary><strong>3. Ask a question</strong></summary>
-
-<br>
-
-Your question gets embedded the same way and used to search that
-session's Qdrant collection. The model
-(`gemma4:31b-cloud` via Ollama) is then handed a system prompt built
-around what was found — see `server/src/lib/promptBuilder.js`:
-
-| Situation | Behavior |
+| Layer | Technology |
 |---|---|
-| No document uploaded yet | Told to say so, not invent an answer |
-| Document exists, nothing relevant found | Told to say the answer isn't in the document |
-| Relevant passages found | Told to answer from those passages, and flag it if they only partially cover the question |
+| **Frontend** | React 19 + Vite, vanilla CSS modules, Framer Motion |
+| **Backend** | Node.js + Express (ESM), `--watch` dev mode |
+| **AI / Embeddings** | Gemini API (`gemini-3.x-flash` + `gemini-embedding-001`) |
+| **Vector store** | Qdrant Cloud (or local via Docker) |
+| **Database** | MongoDB Atlas (or local) — users + conversation history |
+| **Auth** | Email/password (bcrypt + express-session) + Google OAuth 2.0 |
 
-</details>
+---
 
-<details>
-<summary><strong>4. Logged in? Everything's saved automatically</strong></summary>
+## Prerequisites
 
-<br>
-
-The moment you send your first message in a session, a `Conversation`
-document is created in MongoDB (title auto-set from that first
-message). Every exchange after that is appended to it. You can rename
-or delete any saved chat from the sidebar. None of this happens for
-guests — see [Auth & saved history](#auth--saved-history).
-
-</details>
+| Requirement | Notes |
+|---|---|
+| Node.js ≥ 20 | `node --watch` is used in dev mode |
+| [Gemini API key](https://aistudio.google.com/apikey) | Free tier is sufficient to start |
+| [Qdrant](https://qdrant.tech) | Cloud (free tier) **or** local via Docker (see below) |
+| [MongoDB](https://mongodb.com/atlas) | Atlas free M0 tier **or** local |
 
 ---
 
 ## Quick start
 
-<details>
-<summary><strong>Prerequisites</strong></summary>
+### 1 — Clone and install
 
-<br>
+```bash
+git clone https://github.com/your-username/stacks-rag-chatbot.git
+cd stacks-rag-chatbot
 
-- [Ollama](https://ollama.com) running locally, with both models pulled:
-  ```bash
-  ollama pull gemma4:31b-cloud
-  ollama pull qwen3-embedding:0.6b
-  ```
-- Docker (for Qdrant and, optionally, MongoDB)
+# Install server dependencies
+cd server && npm install
 
-</details>
+# Install client dependencies
+cd ../client && npm install
+```
 
-<details>
-<summary><strong>1. Start Qdrant</strong></summary>
+### 2 — Configure the server
 
-<br>
+```bash
+cp server/.env.example server/.env
+```
+
+Open `server/.env` and fill in:
+
+```env
+# Required — get a free key at https://aistudio.google.com/apikey
+GEMINI_API_KEY=
+
+# Required — Qdrant Cloud cluster URL + API key
+QDRANT_URL=https://your-cluster.cloud.qdrant.io
+QDRANT_API_KEY=
+
+# Required — MongoDB connection string
+MONGODB_URI=mongodb+srv://...
+
+# Required — generate with: node -e "require('crypto').randomBytes(32).toString('hex')|console.log"
+SESSION_SECRET=
+
+# Optional — only needed if you want Google Sign-In
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CALLBACK_URL=http://localhost:3001/api/auth/google/callback
+```
+
+### 3 — Start the app
+
+Open two terminals:
+
+```bash
+# Terminal 1 — backend (auto-restarts on file changes)
+cd server && npm run dev
+
+# Terminal 2 — frontend (Vite HMR)
+cd client && npm run dev
+```
+
+Open **http://localhost:5173** — you're done.
+
+---
+
+## Running Qdrant locally (Docker)
+
+If you don't want a Qdrant Cloud account, run it locally:
 
 ```bash
 docker compose up -d
 ```
 
-</details>
+Then set in `server/.env`:
 
-<details>
-<summary><strong>2. Start MongoDB</strong></summary>
-
-<br>
-
-Don't already have MongoDB running locally? Spin one up:
-
-```bash
-docker run -d -p 27017:27017 --name mongo mongo
+```env
+QDRANT_URL=http://localhost:6333
+QDRANT_API_KEY=
 ```
-
-Or point `MONGODB_URI` in `server/.env` at Atlas or any instance you
-already run.
-
-</details>
-
-<details>
-<summary><strong>3. Backend</strong></summary>
-
-<br>
-
-```bash
-cd server
-npm install
-cp .env.example .env    # then fill in MONGODB_URI / SESSION_SECRET if not using the defaults
-npm run dev              # http://localhost:3001
-```
-
-</details>
-
-<details>
-<summary><strong>4. Frontend</strong></summary>
-
-<br>
-
-```bash
-cd client
-npm install
-npm run dev               # http://localhost:3000
-```
-
-</details>
-
-<details>
-<summary><strong>5. Try it</strong></summary>
-
-<br>
-
-Open the frontend URL. You can start asking questions right away as a
-guest, or register an account from the sidebar's "Log in" button to
-have your chats saved and reopenable later.
-
-</details>
 
 ---
 
-## Environment variables
+## Google Sign-In setup (optional)
 
-All backend settings live in `server/.env` (copy from `server/.env.example`):
+1. Go to [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials)
+2. Create an **OAuth 2.0 Client ID** → **Web Application**
+3. Add an authorized redirect URI: `http://localhost:3001/api/auth/google/callback`
+4. Paste the Client ID and Secret into `server/.env`
 
-| Variable | Purpose | Default |
-|---|---|---|
-| `PORT` | Backend port | `3001` |
-| `CLIENT_ORIGIN` | Allowed CORS origin | `http://localhost:5173` |
-| `OLLAMA_HOST` | Ollama server URL | `http://127.0.0.1:11434` |
-| `OLLAMA_CHAT_MODEL` | Chat model | `gemma4:31b-cloud` |
-| `OLLAMA_EMBED_MODEL` | Embedding model | `qwen3-embedding:0.6b` |
-| `QDRANT_URL` | Qdrant server URL | `http://127.0.0.1:8333` |
-| `QDRANT_API_KEY` | Qdrant API key, if any | *(empty)* |
-| `QDRANT_COLLECTION_PREFIX` | Prefix for per-session collections | `stacks_session_` |
-| `CHUNK_SIZE` / `CHUNK_OVERLAP` | Document chunking | `1200` / `150` |
-| `TOP_K` / `SCORE_THRESHOLD` | Retrieval tuning | `5` / `0.45` |
-| `MAX_UPLOAD_MB` | Upload size limit | `20` |
-| `MONGODB_URI` | Mongo connection string (auth + saved chats) | `mongodb://127.0.0.1:27017/stacks_rag` |
-| `SESSION_SECRET` | Login session signing secret — **change this** before deploying anywhere real | *(dev placeholder)* |
-
-The frontend needs one variable, in `client/.env`:
-
-| Variable | Purpose | Default |
-|---|---|---|
-| `VITE_API_URL` | Backend base URL | `http://localhost:3001` |
+Without these values the Google button gracefully returns a `501` — the rest of the app is unaffected.
 
 ---
 
-## Auth & saved history
+## Model fallback
 
-- **Register/log in with either email or username** — one identifier field on login, both collected on registration.
-- **Passwords** are hashed with bcrypt (12 salt rounds) before ever touching the database — `server/src/models/User.js`.
-- **Sessions** are server-side, stored in MongoDB via `connect-mongo`, delivered as an `httpOnly` cookie — not JWTs.
-- **Guest traffic never touches MongoDB.** Every write in `server/src/lib/conversationStore.js` is a no-op unless `req.session.userId` is set. Conversations aren't created eagerly on session start either — only lazily, the moment a real message is exchanged.
-- **Logging out** clears the chat on screen immediately and starts a fresh guest session — it doesn't just log you out and leave the old conversation sitting there.
-- Every `User` document has an `isAdmin` flag, ready for an admin dashboard — not wired up to any UI yet (see [Roadmap](#roadmap)).
+Stacks uses a **fallback chain** so it stays responsive under Gemini API pressure:
+
+```
+Your GEMINI_CHAT_MODEL (primary)
+  → gemini-3.8-flash
+  → gemini-3.7-flash
+  → gemini-3.6-flash
+  → gemini-3.5-flash
+  → gemini-3.5-flash-lite
+  → gemini-3.1-flash-lite  ← last resort
+```
+
+A fallback is triggered on **429** (rate limit), **503** (overloaded), or **404** (deprecated model). You'll see a one-line warning in the server log when it kicks in:
+
+```
+[gemini] gemini-3.7-flash overloaded (503) — falling back to gemini-3.8-flash
+```
+
+---
+
+## API reference
+
+All endpoints are prefixed `/api`.
+
+### Auth — `/api/auth`
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/register` | `{ username, email, password }` | Create a new account |
+| `POST` | `/login` | `{ identifier, password }` | Sign in (identifier = email or username) |
+| `POST` | `/logout` | — | Sign out, clear session |
+| `GET` | `/me` | — | Returns the current user or `null` |
+
+### Google OAuth — `/api/auth/google`
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/` | Redirect to Google consent screen |
+| `GET` | `/callback` | OAuth callback — sets session, redirects to client |
+
+### Sessions — `/api/session`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/new` | — | Create a new ephemeral chat session, returns `sessionId` |
+| `GET` | `/:sessionId/status` | — | Document status for a session |
+| `GET` | `/history` | ✅ | List saved conversations |
+| `GET` | `/history/:sessionId` | ✅ | Full message history for one conversation |
+| `PATCH` | `/history/:sessionId` | ✅ | Rename a conversation |
+| `DELETE` | `/history/:sessionId` | ✅ | Delete a conversation |
+
+### Upload — `/api/upload`
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/` | `multipart/form-data` — `file` + `sessionId` | Index a document (PDF, DOCX, TXT — max 20 MB) |
+
+### Chat — `/api/chat`
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/` | `{ sessionId, message }` | Send a message, returns `{ reply }` |
 
 ---
 
@@ -218,149 +217,79 @@ The frontend needs one variable, in `client/.env`:
 
 ```
 stacks-rag-chatbot/
-├── client/                      React + Vite + Tailwind frontend
+├── client/                   # React + Vite frontend
+│   ├── public/               # Static assets (SVG icon, etc.)
 │   └── src/
-│       ├── components/          Sidebar, ChatPage, LoginModal, ChatHistoryItem, ...
-│       ├── context/AuthContext.jsx
-│       └── lib/api.js           All backend calls, credentials: 'include' throughout
-├── server/                      Express backend
+│       ├── components/       # UI components (CSS modules)
+│       │   ├── Sidebar.*     # Conversation history sidebar
+│       │   ├── ChatPage.*    # Main layout
+│       │   ├── ChatMessages.*# Message list + empty state
+│       │   ├── MessageBubble.*# Individual messages + code blocks
+│       │   ├── ChatInput.*   # Textarea + file upload (drag-and-drop)
+│       │   ├── Topbar.*      # Document badge + sign-in button
+│       │   ├── LoginModal.*  # Auth modal with Google Sign-In
+│       │   └── TypingIndicator.* # Animated 3-dot indicator
+│       ├── context/
+│       │   └── AuthContext.jsx   # Auth state + loginWithGoogle()
+│       ├── lib/
+│       │   └── api.js            # Fetch wrappers for all API calls
+│       ├── App.jsx               # Root — state, orchestration
+│       └── index.css             # Design tokens + global reset
+│
+├── server/                   # Express backend
 │   └── src/
-│       ├── routes/              session.js, upload.js, chat.js, auth.js
-│       ├── models/              User.js, Conversation.js
-│       ├── middleware/auth.js   requireAuth / requireAdmin
-│       └── lib/                 sessionStore.js (in-memory), conversationStore.js (Mongo),
-│                                 qdrantClient.js, promptBuilder.js
-└── docker-compose.yml           Qdrant
+│       ├── routes/
+│       │   ├── auth.js           # Email/password auth
+│       │   ├── googleAuth.js     # Google OAuth (lazy-init)
+│       │   ├── session.js        # Session + history routes
+│       │   ├── upload.js         # File upload + Qdrant indexing
+│       │   └── chat.js           # RAG query + Gemini generation
+│       ├── lib/
+│       │   ├── geminiClient.js   # Chat + embed with fallback chain
+│       │   ├── qdrantClient.js   # Vector store operations
+│       │   ├── promptBuilder.js  # RAG prompt assembly
+│       │   ├── conversationStore.js # MongoDB conversation CRUD
+│       │   ├── sessionStore.js   # In-memory session state
+│       │   ├── chunker.js        # Text → overlapping chunks
+│       │   └── textExtract.js    # PDF / DOCX / TXT extraction
+│       ├── models/
+│       │   └── User.js           # Mongoose schema (+ Google fields)
+│       ├── middleware/
+│       │   └── auth.js           # requireAuth guard
+│       ├── config.js             # Centralised env config
+│       └── index.js              # Express app entry point
+│
+├── docker-compose.yml        # Local Qdrant setup
+└── .env.example              # (copy to server/.env)
 ```
 
 ---
 
-## API reference
+## Environment variables
 
-<details>
-<summary><strong>Auth — <code>/api/auth</code></strong></summary>
-
-<br>
-
-| Method | Path | Auth | Notes |
+| Variable | Required | Default | Description |
 |---|---|---|---|
-| `POST` | `/register` | — | `{ username, email, password }` |
-| `POST` | `/login` | — | `{ identifier, password }` — identifier is email *or* username |
-| `POST` | `/logout` | ✓ | Destroys the session |
-| `GET` | `/me` | ✓ | Current user |
-
-</details>
-
-<details>
-<summary><strong>Session & chat — <code>/api/session</code>, <code>/api/upload</code>, <code>/api/chat</code></strong></summary>
-
-<br>
-
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| `POST` | `/session/new` | — | Creates an in-memory session; nothing written to Mongo yet |
-| `GET` | `/session/:id/status` | — | Document status for a session |
-| `GET` | `/session/history` | ✓ | List your saved conversations |
-| `GET` | `/session/history/:id` | ✓ | Full messages for one conversation |
-| `PATCH` | `/session/history/:id` | ✓ | Rename — `{ title }` |
-| `DELETE` | `/session/history/:id` | ✓ | Delete |
-| `POST` | `/upload` | — | Multipart file upload, indexes into Qdrant |
-| `POST` | `/chat` | — | `{ sessionId, message }` → `{ reply }` |
-
-</details>
+| `PORT` | — | `3001` | Server port |
+| `CLIENT_ORIGIN` | — | `http://localhost:5173` | CORS origin |
+| `GEMINI_API_KEY` | ✅ | — | Gemini API key |
+| `GEMINI_CHAT_MODEL` | — | `gemini-2.0-flash` | Primary chat model |
+| `GEMINI_EMBED_MODEL` | — | `text-embedding-004` | Primary embedding model |
+| `QDRANT_URL` | ✅ | `http://127.0.0.1:6333` | Qdrant endpoint |
+| `QDRANT_API_KEY` | — | — | Qdrant API key (Cloud only) |
+| `QDRANT_COLLECTION_PREFIX` | — | `stacks_session_` | Collection name prefix |
+| `CHUNK_SIZE` | — | `1200` | Characters per chunk |
+| `CHUNK_OVERLAP` | — | `150` | Overlap between chunks |
+| `TOP_K` | — | `5` | Chunks retrieved per query |
+| `SCORE_THRESHOLD` | — | `0.45` | Minimum similarity score |
+| `MAX_UPLOAD_MB` | — | `20` | Upload size limit |
+| `MONGODB_URI` | ✅ | `mongodb://localhost/stacks_rag` | MongoDB connection string |
+| `SESSION_SECRET` | ✅ | — | Express session secret |
+| `GOOGLE_CLIENT_ID` | — | — | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | — | — | Google OAuth secret |
+| `GOOGLE_CALLBACK_URL` | — | `http://localhost:3001/api/auth/google/callback` | OAuth redirect URI |
 
 ---
 
-## Troubleshooting
+## License
 
-<details>
-<summary><strong>"Couldn't reach the server to start a session"</strong></summary>
-
-<br>
-
-The frontend can't reach the backend. Check the backend terminal is
-actually running and listening (`Stacks server listening on
-http://localhost:3001`), and that `VITE_API_URL` in `client/.env`
-points at the right port.
-
-</details>
-
-<details>
-<summary><strong>CORS errors in the Network tab</strong></summary>
-
-<br>
-
-`server/src/index.js` allows `http://localhost:3000` by default with
-`credentials: true`. If your frontend runs on a different port, update
-the `cors()` origin to match — and make sure every frontend `fetch`
-call includes `credentials: 'include'`, or the session cookie won't be
-sent.
-
-</details>
-
-<details>
-<summary><strong>Windows: Vite fails with <code>EACCES: permission denied</code></strong></summary>
-
-<br>
-
-This is usually Windows' reserved/excluded port range, not a real
-permissions issue. Run Vite on a different port:
-
-```bash
-npm run dev -- --port 3000
-```
-
-Or check what's excluded:
-
-```powershell
-netsh interface ipv4 show excludedportrange protocol=tcp
-```
-
-</details>
-
-<details>
-<summary><strong>Registration fails with <code>passwordHash: Path 'passwordHash' is required</code></strong></summary>
-
-<br>
-
-Mongoose validates a document *before* running `pre('save')` hooks. If
-you ever touch `server/src/models/User.js`, keep the password-hashing
-hook on `pre('validate')`, not `pre('save')` — otherwise the hash
-never exists yet when the `required` check runs.
-
-</details>
-
-<details>
-<summary><strong>MongoDB connection fails on startup</strong></summary>
-
-<br>
-
-The backend calls `connectDB()` before it starts listening and exits
-if it can't connect. Confirm Mongo is actually running:
-
-```bash
-mongosh --eval "db.runCommand({ ping: 1 })"
-```
-
-or start it in Docker:
-
-```bash
-docker run -d -p 27017:27017 --name mongo mongo
-```
-
-</details>
-
----
-
-## Roadmap
-
-- [ ] Admin dashboard (list/promote/delete users) — the `isAdmin` field
-      already exists on `User`, just not exposed anywhere yet
-- [ ] Gate `/upload` and `/chat` behind login, if you want guest access
-      removed entirely rather than just unsaved
-- [ ] Re-hydrate a session's Qdrant/document state from Mongo when
-      reopening an old saved chat after a server restart (currently the
-      messages and file name display correctly, but retrieval context
-      is only available if the server process hasn't restarted since
-      that document was uploaded)
-- [ ] Multiple documents per session, instead of one replacing the last
+MIT — see [LICENSE](LICENSE).

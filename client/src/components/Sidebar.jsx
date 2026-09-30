@@ -1,111 +1,151 @@
-import NewChatButton from './NewChatButton.jsx'
-import ChatHistoryItem from './ChatHistoryItem.jsx'
-import LoginButton from './LoginButton.jsx'
+﻿import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { MessageSquare, Plus, Trash2, Pencil, Check, X, ChevronDown, LogOut, LogIn, FileText } from 'lucide-react'
 
-/** Teal two-panel Stacks logomark */
-function StacksMark() {
+const StacksIcon = () => (
+  <svg width=22 height=22 viewBox=0 0 32 32 fill=none>
+    <rect x=4 y=20 width=24 height=4 rx=2 fill=#00C9B1 opacity=0.5/>
+    <rect x=4 y=14 width=24 height=4 rx=2 fill=#00C9B1 opacity=0.75/>
+    <rect x=4 y=8  width=24 height=4 rx=2 fill=#00C9B1/>
+  </svg>
+)
+
+function ConversationItem({ chat, isActive, onSelect, onRename, onDelete }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft]     = useState(chat.title || 'Untitled')
+  const inputRef = useRef(null)
+
+  useEffect(() => { if (editing) inputRef.current?.select() }, [editing])
+
+  const commit = () => {
+    const trimmed = draft.trim()
+    if (trimmed && trimmed !== chat.title) onRename(chat.sessionId, trimmed)
+    setEditing(false)
+  }
+
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-      <path
-        d="M4 5.5C4 4.67 4.67 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z"
-        fill="#00C9B1"
-        opacity="0.95"
-      />
-      <path
-        d="M13 4h5.5c.83 0 1.5.67 1.5 1.5v13c0 .83-.67 1.5-1.5 1.5H13V4Z"
-        fill="#00C9B1"
-        opacity="0.42"
-      />
-    </svg>
+    <div
+      className={conv-item}
+      onClick={() => !editing && onSelect(chat.sessionId)}
+    >
+      <FileText size={13} className=conv-icon />
+      {editing ? (
+        <input
+          ref={inputRef}
+          className=conv-edit-input
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setEditing(false) }}
+          onClick={e => e.stopPropagation()}
+        />
+      ) : (
+        <span className=conv-title>{chat.title || 'Untitled'}</span>
+      )}
+      <div className=conv-actions onClick={e => e.stopPropagation()}>
+        {editing ? (
+          <>
+            <button onClick={commit} title=Save><Check size={12}/></button>
+            <button onClick={() => setEditing(false)} title=Cancel><X size={12}/></button>
+          </>
+        ) : (
+          <>
+            <button onClick={() => setEditing(true)} title=Rename><Pencil size={12}/></button>
+            <button onClick={() => onDelete(chat.sessionId)} title=Delete><Trash2 size={12}/></button>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 
-export default function Sidebar({
-  activeChatId,
-  onSelectChat,
-  onNewChat,
-  isOpen,
-  onClose,
-  onOpenLogin,
-  history,
-  historyLoading,
-  onRenameChat,
-  onDeleteChat,
-  onLogout,
-}) {
+export default function Sidebar({ isOpen, onClose, activeChatId, onSelectChat, onNewChat, history, historyLoading, onRenameChat, onDeleteChat, onOpenLogin, onLogout }) {
   const { user } = useAuth()
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+
+  const today = history.filter(c => {
+    const d = new Date(c.updatedAt || c.createdAt)
+    return new Date() - d < 86400000
+  })
+  const older = history.filter(c => {
+    const d = new Date(c.updatedAt || c.createdAt)
+    return new Date() - d >= 86400000
+  })
 
   return (
     <>
-      {/* Mobile backdrop scrim */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
-
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 flex h-full w-72 shrink-0 flex-col
-                    border-r border-black/[0.07] bg-cloud-raised px-4 py-5
-                    dark:border-white/[0.06] dark:bg-obsidian
-                    transition-transform duration-200 ease-out
-                    md:static md:z-auto md:translate-x-0
-                    ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
-      >
-        {/* ── Logo ── */}
-        <div className="mb-5 flex items-center gap-3 px-1">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 ring-1 ring-accent/20">
-            <StacksMark />
-          </span>
-          <div className="leading-tight">
-            <p className="text-lg font-semibold tracking-tight text-obsidian dark:text-white">
-              Stacks
-            </p>
-            <p className="text-[10px] font-medium uppercase tracking-widest text-obsidian/40 dark:text-white/35">
-              Document assistant
-            </p>
-          </div>
+      {isOpen && <div className=sidebar-overlay onClick={onClose}/>}
+      <aside className={sidebar}>
+        {/* Logo */}
+        <div className=sidebar-logo>
+          <StacksIcon/>
+          <span className=sidebar-logo-text>Stacks</span>
+          <div className=sidebar-logo-badge>RAG</div>
         </div>
 
-        <NewChatButton onClick={onNewChat} />
+        {/* New Chat */}
+        <button className=new-chat-btn onClick={() => { onNewChat(); onClose() }}>
+          <Plus size={15} strokeWidth={2.5}/>
+          <span>New Chat</span>
+        </button>
 
-        {/* ── Chat history ── */}
-        <div className="mt-6 flex min-h-0 flex-1 flex-col">
-          <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-widest text-obsidian/35 dark:text-white/30">
-            Recent
-          </p>
-          <div className="flex-1 space-y-0.5 overflow-y-auto pr-1">
-            {!user ? (
-              <p className="px-1 py-2 text-sm text-obsidian/45 dark:text-white/40">
-                Log in to save and revisit your chats.
-              </p>
-            ) : historyLoading ? (
-              <p className="px-1 py-2 text-sm text-obsidian/45 dark:text-white/40">Loading…</p>
-            ) : history.length === 0 ? (
-              <p className="px-1 py-2 text-sm text-obsidian/45 dark:text-white/40">
-                No saved chats yet — ask something to get started.
-              </p>
-            ) : (
-              history.map((chat) => (
-                <ChatHistoryItem
-                  key={chat.sessionId}
-                  title={chat.title || 'Untitled chat'}
-                  active={chat.sessionId === activeChatId}
-                  onClick={() => onSelectChat(chat.sessionId)}
-                  onRename={(newTitle) => onRenameChat(chat.sessionId, newTitle)}
-                  onDelete={() => onDeleteChat(chat.sessionId)}
-                />
-              ))
-            )}
-          </div>
+        {/* Conversations */}
+        <div className=sidebar-scrollable>
+          {historyLoading && (
+            <div className=sidebar-loading>
+              {[...Array(3)].map((_, i) => <div key={i} className=conv-skeleton/>)}
+            </div>
+          )}
+          {!historyLoading && history.length === 0 && (
+            <div className=sidebar-empty>
+              <MessageSquare size={20} opacity={.3}/>
+              <span>No conversations yet</span>
+            </div>
+          )}
+          {!historyLoading && today.length > 0 && (
+            <div className=conv-group>
+              <span className=conv-group-label>Today</span>
+              {today.map(c => (
+                <ConversationItem key={c.sessionId} chat={c} isActive={c.sessionId === activeChatId}
+                  onSelect={onSelectChat} onRename={onRenameChat} onDelete={onDeleteChat}/>
+              ))}
+            </div>
+          )}
+          {!historyLoading && older.length > 0 && (
+            <div className=conv-group>
+              <span className=conv-group-label>Previous</span>
+              {older.map(c => (
+                <ConversationItem key={c.sessionId} chat={c} isActive={c.sessionId === activeChatId}
+                  onSelect={onSelectChat} onRename={onRenameChat} onDelete={onDeleteChat}/>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* ── Footer / auth ── */}
-        <div className="mt-3 shrink-0 border-t border-black/[0.07] pt-3 dark:border-white/[0.06]">
-          <LoginButton onOpenLogin={onOpenLogin} onLogout={onLogout} />
+        {/* User footer */}
+        <div className=sidebar-footer>
+          {user ? (
+            <div className=user-widget onClick={() => setUserMenuOpen(v => !v)}>
+              <div className=user-avatar>{user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}</div>
+              <div className=user-info>
+                <span className=user-name>{user.username || user.displayName || 'User'}</span>
+                <span className=user-email>{user.email}</span>
+              </div>
+              <ChevronDown size={14} className={user-chevron}/>
+              {userMenuOpen && (
+                <div className=user-menu onClick={e => e.stopPropagation()}>
+                  <button className=user-menu-item user-menu-item--danger onClick={() => { setUserMenuOpen(false); onLogout() }}>
+                    <LogOut size={13}/> Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button className=sign-in-btn onClick={onOpenLogin}>
+              <LogIn size={14}/>
+              <span>Sign in</span>
+            </button>
+          )}
         </div>
       </aside>
     </>

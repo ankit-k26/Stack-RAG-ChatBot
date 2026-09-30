@@ -8,6 +8,7 @@ import { embed } from '../lib/geminiClient.js'
 import { collectionNameFor, recreateCollection, upsertChunks } from '../lib/qdrantClient.js'
 import { setDocument } from '../lib/sessionStore.js'
 import { recordUpload } from '../lib/conversationStore.js'
+import { logRequest } from '../middleware/guestTracking.js'
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -77,6 +78,7 @@ uploadRouter.post('/', upload.single('file'), async (req, res) => {
       fileName: session.fileName,
       chunkCount: session.chunkCount,
     })
+    await logRequest(req, 'upload')
 
     res.json({
       fileName: session.fileName,

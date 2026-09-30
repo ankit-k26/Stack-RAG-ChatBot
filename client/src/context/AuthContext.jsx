@@ -3,9 +3,20 @@ import { fetchCurrentUser, loginUser, logoutUser, registerUser } from '../lib/ap
 
 const AuthContext = createContext(null)
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  // Check if the server just redirected us back after a successful Google OAuth
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('auth_success') === '1') {
+      // Clean up the URL without a page reload
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -41,8 +52,14 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  // Redirect to Google OAuth — the server handles the callback and
+  // redirects back to the client with ?auth_success=1
+  function loginWithGoogle() {
+    window.location.href = `${API_URL}/api/auth/google`
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithGoogle }}>
       {children}
     </AuthContext.Provider>
   )

@@ -11,12 +11,13 @@ node_modules/
 .env.local
 .env.development
 .env.production
+.env.staging
 .env.*.local
 **/.env
 **/.env.local
 **/.env.*.local
 
-# Allow example/template env files to be committed
+# Allow example/template env files
 !*.env.example
 !**/.env.example
 
@@ -38,8 +39,7 @@ client/dist-ssr/
 **/.vite/
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Server — uploaded & temporary files
-# (Multer writes here; should never be in source control)
+# Uploaded & temporary files (Multer writes here)
 # ─────────────────────────────────────────────────────────────────────────────
 server/uploads/
 server/tmp/
@@ -47,13 +47,14 @@ uploads/
 tmp/
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Server — database files (if SQLite or local Qdrant snapshots are ever used)
+# Local database files
 # ─────────────────────────────────────────────────────────────────────────────
 *.sqlite
 *.sqlite3
 *.db
 qdrant_storage/
 qdrant-data/
+data/
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Logs
@@ -68,8 +69,7 @@ lerna-debug.log*
 .pnpm-debug.log*
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Package manager lockfiles — keep only the one you use
-# (This project uses npm so package-lock.json is kept; others are ignored)
+# Package manager lockfiles — keep only npm's
 # ─────────────────────────────────────────────────────────────────────────────
 yarn.lock
 pnpm-lock.yaml
@@ -77,7 +77,7 @@ pnpm-lock.yaml
 .pnp.*
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Testing
+# Testing & coverage
 # ─────────────────────────────────────────────────────────────────────────────
 coverage/
 .nyc_output/
@@ -112,40 +112,89 @@ Thumbs.db
 Desktop.ini
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Docker
+# Docker local overrides
 # ─────────────────────────────────────────────────────────────────────────────
-# Keep docker-compose.yml but ignore any local override files
 docker-compose.override.yml
 docker-compose.local.yml
 .docker/
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Vercel
+# Deployment platforms
 # ─────────────────────────────────────────────────────────────────────────────
-.vercel/
 .vercel
+.vercel/
+.netlify/
+.render/
 
 # ─────────────────────────────────────────────────────────────────────────────
-# AI / Agent tool artefacts (Antigravity, Claude, Codex, etc.)
+# AI coding agent workspaces
+# Every agent gets its own dot-folder; none of them belong in source control.
 # ─────────────────────────────────────────────────────────────────────────────
+.adal/
+.agents/
+.aider-desk/
+.augment/
+.autohand/
+.bob/
 .claude/
+.codeartsdoer/
+.codebuddy/
+.codemaker/
+.codestudio/
 .codex/
+.commandcode/
+.continue/
+.cortex/
+.crush/
+.devin/
+.forge/
+.gemini/
+.goose/
+.grok/
+.hermes/
+.iflow/
 .impeccable/
+.inferencesh/
+.jazz/
+.junie/
+.kimchi/
+.kiro/
+.kode/
+.lingma/
+.mcpjam/
+.minimax/
+.moxby/
+.mux/
+.neovate/
+.ona/
+.openhands/
+.pi/
+.pochi/
+.posit/
+.qoder/
+.qwen/
+.reasonix/
+.roo/
+.rovodev/
+.tabnine/
+.terramind/
+.tinycloud/
+.trae/
+.vibe/
+.windsurf/
+.zcode/
+.zencoder/
+
+# Graphify knowledge graph output
+graphify-out/
+
+# Skills / design assets not needed in source control
+design/
+skills/
+skills-lock.json
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Misc
-# ─────────────────────────────────────────────────────────────────────────────
-*.local
-*.tgz
-*.tar.gz
-.cache/
-.parcel-cache/
-.turbo/
-design
-.agents
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Explicit Secrets, Keys, and Certs
+# Secrets, keys, and certificates
 # ─────────────────────────────────────────────────────────────────────────────
 *.pem
 *.key
@@ -157,3 +206,13 @@ secrets.json
 auth.json
 *.keystore
 *.pub
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Misc
+# ─────────────────────────────────────────────────────────────────────────────
+*.local
+*.tgz
+*.tar.gz
+.cache/
+.parcel-cache/
+.turbo/

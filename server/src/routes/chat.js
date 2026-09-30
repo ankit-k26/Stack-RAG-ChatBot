@@ -5,11 +5,12 @@ import { collectionNameFor, search } from '../lib/qdrantClient.js'
 import { getOrCreateSession, appendHistory } from '../lib/sessionStore.js'
 import { recordExchange } from '../lib/conversationStore.js'
 import { buildChatMessages } from '../lib/promptBuilder.js'
+import { logRequest } from '../middleware/guestTracking.js'
 
 export const chatRouter = Router()
 
 chatRouter.post('/', async (req, res) => {
-  const { sessionId, message } = req.body
+  const { sessionId, message, model } = req.body
 
   if (!sessionId) {
     return res.status(400).json({ error: 'sessionId is required' })
@@ -45,12 +46,13 @@ chatRouter.post('/', async (req, res) => {
       question: message,
     })
 
-    const reply = await chatModel(messages)
+    const reply = await chatModel(messages, model)
 
     appendHistory(sessionId, 'user', message)
     appendHistory(sessionId, 'assistant', reply)
 
     await recordExchange(sessionId, req.session?.userId, message, reply)
+    await logRequest(req, 'chat')
 
     res.json({
       reply,

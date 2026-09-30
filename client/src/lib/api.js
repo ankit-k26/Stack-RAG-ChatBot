@@ -41,12 +41,12 @@ export async function uploadDocument(sessionId, file) {
   return parseJsonOrThrow(res)
 }
 
-export async function sendMessage(sessionId, message) {
+export async function sendMessage(sessionId, message, model = 'auto') {
   const res = await fetch(`${API_URL}/api/chat`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sessionId, message }),
+    body: JSON.stringify({ sessionId, message, model }),
   })
   return parseJsonOrThrow(res)
 }
@@ -121,5 +121,22 @@ export async function fetchCurrentUser() {
     credentials: 'include',
   })
   if (res.status === 401) return { user: null }
+  return parseJsonOrThrow(res)
+}
+
+// --- Admin ---
+
+export async function fetchAdminStats() {
+  const res = await fetch(`${API_URL}/api/admin/stats`, { credentials: 'include' })
+  return parseJsonOrThrow(res)
+}
+
+export async function fetchAdminUsers() {
+  const res = await fetch(`${API_URL}/api/admin/users`, { credentials: 'include' })
+  return parseJsonOrThrow(res)
+}
+
+export async function fetchAdminGuests() {
+  const res = await fetch(`${API_URL}/api/admin/guests`, { credentials: 'include' })
   return parseJsonOrThrow(res)
 }
