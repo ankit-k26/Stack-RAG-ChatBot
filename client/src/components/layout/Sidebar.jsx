@@ -93,7 +93,25 @@ export default function Sidebar({
   onOpenLogin,
   onLogout,
 }) {
-  const { user } = useAuth()
+  const { user, updateProfile } = useAuth()
+  const [editingName, setEditingName] = useState(false)
+  const [draftName, setDraftName] = useState('')
+
+  const handleSaveName = async () => {
+    const newName = draftName.trim()
+    if (!newName) {
+      setEditingName(false)
+      return
+    }
+    if (newName !== (user.displayName || user.username)) {
+      try {
+        await updateProfile(newName)
+      } catch (err) {
+        alert(err.message || 'Failed to update name')
+      }
+    }
+    setEditingName(false)
+  }
 
   return (
     <>
@@ -107,7 +125,7 @@ export default function Sidebar({
             onClick={onClose}
             style={{
               position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(4px)', zIndex: 40, display: 'none',
+              backdropFilter: 'blur(4px)', zIndex: 40
             }}
             className="mobile-backdrop"
           />
@@ -116,13 +134,22 @@ export default function Sidebar({
 
       <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
         {/* Logo */}
-        <div className="sidebar-logo">
+        <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center' }}>
           <div className="sidebar-logo-mark">S</div>
           <span className="sidebar-logo-text">Stacks</span>
+          
+          <button 
+            className="icon-btn mobile-close-btn" 
+            onClick={onClose} 
+            title="Close sidebar"
+            style={{ marginLeft: 'auto' }}
+          >
+            <XIcon size={18} />
+          </button>
         </div>
 
         {/* New Chat */}
-        <button className="sidebar-new-chat" onClick={onNewChat}>
+        <button className="sidebar-new-chat" onClick={() => { onNewChat(); if (window.innerWidth <= 768) onClose(); }}>
           <PlusIcon size={15} />
           New Chat
         </button>
@@ -146,7 +173,7 @@ export default function Sidebar({
                     key={chat.sessionId}
                     chat={chat}
                     active={chat.sessionId === activeChatId}
-                    onSelect={onSelectChat}
+                    onSelect={(id) => { onSelectChat(id); if (window.innerWidth <= 768) onClose(); }}
                     onRename={onRenameChat}
                     onDelete={onDeleteChat}
                   />
@@ -166,9 +193,34 @@ export default function Sidebar({
             <div className="sidebar-user-card">
               <Avatar user={user} size="md" />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {user.displayName || user.username}
-                </p>
+                {editingName ? (
+                  <input
+                    value={draftName}
+                    onChange={(e) => setDraftName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveName()
+                      if (e.key === 'Escape') setEditingName(false)
+                    }}
+                    onBlur={handleSaveName}
+                    autoFocus
+                    style={{
+                      fontSize: 13, fontWeight: 500, width: '100%', background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid var(--glass-border)', color: 'inherit', outline: 'none',
+                      borderRadius: 4, padding: '0 4px', margin: '-1px -5px'
+                    }}
+                  />
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, overflow: 'hidden' }}>
+                    <p 
+                      style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'text' }}
+                      onClick={() => { setEditingName(true); setDraftName(user.displayName || user.username) }}
+                      title="Click to edit name"
+                    >
+                      {user.displayName || user.username}
+                    </p>
+                    <PencilIcon size={10} style={{ opacity: 0.3, flexShrink: 0 }} />
+                  </div>
+                )}
                 <p style={{ fontSize: 11, color: 'var(--text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user.email}
                 </p>

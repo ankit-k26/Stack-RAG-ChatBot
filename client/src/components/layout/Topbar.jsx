@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShieldIcon, LogInIcon, Settings2Icon, ChevronDownIcon, CheckIcon } from 'lucide-react'
+import { ShieldIcon, LogInIcon, Settings2Icon, ChevronDownIcon, CheckIcon, MenuIcon } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import Avatar from '../ui/Avatar.jsx'
 
@@ -40,6 +40,15 @@ export default function Topbar({
   return (
     <header className="topbar">
       <div className="topbar-left">
+        <button
+          className="icon-btn menu-btn"
+          onClick={onOpenSidebar}
+          title="Open menu"
+          aria-label="Open sidebar"
+        >
+          <MenuIcon size={18} />
+        </button>
+
         <div className="topbar-model-badge" style={{ padding: 0, position: 'relative', overflow: 'visible' }} ref={menuRef}>
           <button 
             onClick={() => setMenuOpen(!menuOpen)}

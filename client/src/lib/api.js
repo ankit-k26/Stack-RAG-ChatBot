@@ -124,6 +124,16 @@ export async function fetchCurrentUser() {
   return parseJsonOrThrow(res)
 }
 
+export async function updateProfile(displayName) {
+  const res = await fetch(`${API_URL}/api/auth/profile`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ displayName }),
+  })
+  return parseJsonOrThrow(res)
+}
+
 // --- Admin ---
 
 export async function fetchAdminStats() {

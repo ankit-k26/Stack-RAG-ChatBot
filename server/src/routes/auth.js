@@ -80,3 +80,23 @@ authRouter.get('/me', requireAuth, async (req, res) => {
   }
   res.json({ user })
 })
+
+authRouter.patch('/profile', requireAuth, async (req, res) => {
+  try {
+    const { displayName } = req.body
+    if (displayName === undefined) {
+      return res.status(400).json({ error: 'Nothing to update.' })
+    }
+
+    const user = await User.findById(req.session.userId)
+    if (!user) return res.status(404).json({ error: 'User not found.' })
+
+    user.displayName = displayName.trim() || null
+    await user.save()
+
+    res.json({ user })
+  } catch (err) {
+    console.error('Profile update error:', err)
+    res.status(500).json({ error: 'Failed to update profile. Please try again.' })
+  }
+})

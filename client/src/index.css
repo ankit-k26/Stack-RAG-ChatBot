@@ -740,9 +740,9 @@ a:hover { text-decoration: underline; }
   font-size: 14px;
   line-height: 1.6;
   max-height: 200px;
-  min-height: 24px;
+  min-height: 36px;
   overflow-y: auto;
-  padding: 2px 0;
+  padding: 6px 0;
   scrollbar-width: thin;
 }
 
@@ -1114,7 +1114,8 @@ a:hover { text-decoration: underline; }
 .admin-table-wrap {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-table {
@@ -1265,6 +1266,18 @@ a:hover { text-decoration: underline; }
   .welcome-suggestions {
     grid-template-columns: 1fr;
   }
+
+  /* Admin panel mobile fixes */
+  .admin-panel {
+    width: 100vw;
+  }
+  .admin-header {
+    padding: var(--space-4);
+  }
+  .admin-body {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
 }
 
 /* ─── UTILITY ────────────────────────────────────────────────────────────── */
@@ -1318,4 +1331,15 @@ a:hover { text-decoration: underline; }
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+/* ─── MOBILE MENU BUTTON ─────────────────────────────────────────────────── */
+.menu-btn, .mobile-close-btn {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .menu-btn, .mobile-close-btn {
+    display: flex !important;
+  }
 }

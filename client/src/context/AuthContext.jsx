@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { fetchCurrentUser, loginUser, logoutUser, registerUser } from '../lib/api.js'
+import { fetchCurrentUser, loginUser, logoutUser, registerUser, updateProfile as updateProfileApi } from '../lib/api.js'
 
 const AuthContext = createContext(null)
 
@@ -58,8 +58,14 @@ export function AuthProvider({ children }) {
     window.location.href = `${API_URL}/api/auth/google`
   }
 
+  async function updateProfile(displayName) {
+    const { user: updatedUser } = await updateProfileApi(displayName)
+    setUser(updatedUser)
+    return updatedUser
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithGoogle }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithGoogle, updateProfile }}>
       {children}
     </AuthContext.Provider>
   )
